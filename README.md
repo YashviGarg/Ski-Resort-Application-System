@@ -1,6 +1,6 @@
 # Skier Analytics API System
 
-This Java application provides a suite of RESTful APIs for tracking and analyzing skier activities across multiple resorts. It consists of three core modules that handle different aspects of skier data, utilizing AWS DynamoDB for persistent storage and Redis for caching to optimize performance.
+This Java application provides a suite of RESTful APIs for tracking and analyzing skier activities across multiple resorts. It consists of three core modules that handle different aspects of skier data, utilizing AWS DynamoDB for persistent storage and Java-based Redis client for caching to optimize performance.
 
 ## Features
 
@@ -10,6 +10,8 @@ This Java application provides a suite of RESTful APIs for tracking and analyzin
 - **Cloud-based Storage**: AWS DynamoDB integration with optimized query patterns using secondary indexes.
 - **Concurrent Request Handling**: Thread pooling for efficient processing of multiple simultaneous requests.
 - **Standardized Response Formatting**: Consistent JSON response structure across all API endpoints.
+- **Infrastructure as Code**: Basic AWS infrastructure defined using Terraform.
+- **Performance Monitoring**: CloudWatch metrics and dashboards for operational visibility.
 
 ## Core Modules
 
@@ -28,6 +30,25 @@ This Java application provides a suite of RESTful APIs for tracking and analyzin
 - Endpoint: `GET /skiers/{skierID}/vertical?resort={resortID}&season={seasonID}`
 - Response: `{"resorts": [{"seasonID": 2022, "totalVert": 24680}, {"seasonID": 2023, "totalVert": 13579}]}`
 
+## Cloud Architecture
+
+This application is deployed on AWS with core infrastructure defined in Terraform:
+
+### Networking
+- **VPC**: Isolated network environment with public and private subnets across availability zones
+- **Internet Gateway**: For public internet access
+- **Security Groups**: Precisely defined access controls for the application
+
+### Database
+- **DynamoDB**: NoSQL database with optimized indexes for skier analytics queries
+  - Global Secondary Indexes for efficient query patterns
+  - On-demand capacity to handle variable workloads
+
+### Monitoring
+- **CloudWatch Dashboards**: Visualize key application and infrastructure metrics
+- **CloudWatch Alarms**: Automated alerting for performance issues
+- **SNS Notifications**: Real-time alerts for critical events
+
 ## Dependencies
 
 - [Java Servlet API](https://javaee.github.io/servlet-spec/): For handling HTTP requests and responses.
@@ -35,6 +56,7 @@ This Java application provides a suite of RESTful APIs for tracking and analyzin
 - [Jedis](https://github.com/redis/jedis): Java client for Redis cache operations.
 - [JSON-Java](https://github.com/stleary/JSON-java): For JSON parsing and generation.
 - [Google Gson](https://github.com/google/gson): For JSON serialization/deserialization.
+- [Terraform](https://www.terraform.io/): For infrastructure as code.
 
 ## Technical Architecture
 
@@ -72,19 +94,46 @@ This Java application provides a suite of RESTful APIs for tracking and analyzin
 4. If cache miss occurs, service queries DynamoDB.
 5. Results are formatted as JSON and returned to the client.
 6. If database query succeeded, results are stored in cache for future requests.
+7. Key metrics are logged to CloudWatch for monitoring.
 
-## Usage
+## Deployment
 
-1. Ensure you have Java 11+ installed on your system.
-2. Configure AWS credentials and Redis connection details in `Constants.java`.
-3. Deploy the application to a servlet container (e.g., Tomcat, Jetty).
-4. Make HTTP requests to the API endpoints as documented above.
+### Prerequisites
+- AWS Account with appropriate permissions
+- Terraform 1.0+ installed
+- AWS CLI configured with appropriate credentials
+- Java 11+ for application development
+
+### Infrastructure Deployment
+1. Navigate to the terraform directory
+2. Initialize Terraform: `terraform init`
+3. Review the deployment plan: `terraform plan`
+4. Apply the infrastructure changes: `terraform apply`
+
+### Application Deployment
+1. Build the Java application using Maven: `mvn clean package`
+2. Deploy the application to your preferred application server
+
+## Monitoring
+
+### CloudWatch Metrics
+The application tracks key performance indicators:
+- API request counts and latencies
+- Cache hit/miss ratios
+- DynamoDB read/write units consumed
+- Business metrics (unique skiers, vertical distances)
+
+### Dashboard
+A CloudWatch dashboard provides visualization of:
+- DynamoDB throughput and throttling events
+- Custom business metrics for skier analytics
 
 ## Configuration
 
 - **AWS DynamoDB**: Update credentials and region in `Constants.java`.
 - **Redis Cache**: Configure host and port in `Constants.java`.
 - **Thread Pooling**: Adjust thread pool sizes based on expected load.
+- **Infrastructure**: Modify Terraform variables in `variables.tf` for environment-specific settings.
 
 ## Output
 
